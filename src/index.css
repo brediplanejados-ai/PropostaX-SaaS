@@ -5,19 +5,36 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-headline: "Manrope", sans-serif;
 
-  --color-primary: #051125;
-  --color-primary-container: #1b263b;
-  --color-on-primary-container: #828da7;
-  --color-surface: #f8f9fa;
-  --color-surface-container-low: #f3f4f5;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #e7e8e9;
-  --color-on-surface: #191c1d;
-  --color-on-surface-variant: #45474d;
-  --color-tertiary-container: #002e06;
-  --color-on-tertiary-container: #4f9e4f;
-  --color-tertiary-fixed-dim: #88d982;
-  --color-outline-variant: #c5c6cd;
+  /* Primary: Indigo (Premium modern feel) */
+  --color-primary: #4F46E5;
+  --color-primary-container: #EEF2FF;
+  --color-on-primary-container: #3730A3;
+  
+  /* Surface: Slate (Cool gray) */
+  --color-surface: #F8FAFC;
+  --color-surface-container-low: #F1F5F9;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-high: #E2E8F0;
+  --color-on-surface: #0F172A;
+  --color-on-surface-variant: #475569;
+  
+  /* Tertiary/Accent: Emerald (Profit, approval, positive actions) */
+  --color-tertiary-container: #D1FAE5;
+  --color-on-tertiary-container: #065F46;
+  --color-tertiary-fixed-dim: #10B981;
+  
+  --color-outline-variant: #CBD5E1;
+}
+
+.dark {
+  /* Dark Surface Tokens: Slate deep darks */
+  --color-surface: #0F172A;
+  --color-surface-container-low: #1E293B;
+  --color-surface-container-lowest: #020617;
+  --color-surface-container-high: #334155;
+  --color-on-surface: #F8FAFC;
+  --color-on-surface-variant: #94A3B8;
+  --color-outline-variant: #334155;
 }
 
 @layer base {

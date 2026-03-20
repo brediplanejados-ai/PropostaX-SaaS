@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Plus, Search, User, Calendar, MapPin, ChevronRight, MoreVertical, Trash2 } from 'lucide-react';
 import { Budget } from '../types';
 import { cn } from '../lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 export const BudgetList = ({ 
   budgets, 
@@ -16,6 +17,10 @@ export const BudgetList = ({
   onDeleteBudget: (id: string) => void,
   isDark: boolean 
 }) => {
+  const { profile } = useAuth();
+  
+  const limitReached = profile ? budgets.length >= profile.limite_orcamentos : false;
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -27,13 +32,28 @@ export const BudgetList = ({
           <h2 className={`text-3xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-on-surface'}`}>Meus Orçamentos</h2>
           <p className={`font-medium ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Gerencie seus clientes e projetos</p>
         </div>
-        <button 
-          onClick={onNewBudget}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold ambient-shadow hover:scale-105 transition-transform"
-        >
-          <Plus size={20} />
-          Novo Cliente
-        </button>
+        <div className="flex flex-col items-end gap-2">
+          <button 
+            onClick={limitReached ? undefined : onNewBudget}
+            disabled={limitReached}
+            className={cn(
+              "flex items-center gap-2 px-6 py-3 rounded-2xl font-bold ambient-shadow transition-transform",
+              limitReached 
+                ? "bg-zinc-300 text-zinc-500 cursor-not-allowed" 
+                : "bg-primary text-white hover:scale-105"
+            )}
+            title={limitReached ? "Limite do seu plano atingido" : ""}
+          >
+            <Plus size={20} />
+            Novo Cliente
+          </button>
+          
+          {limitReached && (
+            <span className="text-xs font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">
+              Limite Atingido: Faça Upgrade
+            </span>
+          )}
+        </div>
       </div>
 
       <div className={`p-4 rounded-2xl flex items-center gap-3 ${isDark ? 'bg-white/5' : 'bg-surface-container-low'}`}>

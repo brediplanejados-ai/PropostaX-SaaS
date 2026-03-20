@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react';
 import { ChevronRight, Package, Wrench, BarChart3, FileText, Search, Plus, Trash2, Edit3, Sun, Moon, User, Phone, MapPin, Home, Download, FileImage, Sparkles, Send, Loader2, FileSignature, Gavel, X, Image } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import html2pdf from 'html2pdf.js';
 import jsPDF from 'jspdf';
 import { MOCK_MATERIALS } from '../data';
 import { motion, AnimatePresence } from 'motion/react';
@@ -63,26 +64,25 @@ export const BudgetDetail = ({
     if (!budgetRef.current) return;
     setIsGenerating(true);
     try {
-      const canvas = await html2canvas(budgetRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: isDark ? '#0a0a0a' : '#ffffff'
-      });
-      
       if (format === 'png') {
+        const canvas = await html2canvas(budgetRef.current, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: isDark ? '#0a0a0a' : '#ffffff'
+        });
         const link = document.createElement('a');
         link.download = `Orcamento_${clientName}_${environment}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
       } else {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'px',
-          format: [canvas.width, canvas.height]
-        });
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-        pdf.save(`Orcamento_${clientName}_${environment}.pdf`);
+        const opt = {
+          margin:       0.5,
+          filename:     `Orcamento_${clientName}_${environment}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, backgroundColor: isDark ? '#0a0a0a' : '#ffffff' },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        await html2pdf().set(opt).from(budgetRef.current).save();
       }
     } catch (error) {
       console.error('Error generating budget:', error);

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { Header } from '../components/Header';
 import { BottomNav } from '../components/BottomNav';
 import { Dashboard } from './Dashboard';
@@ -16,8 +18,9 @@ import { MOCK_MATERIALS, MOCK_BUDGET } from '../data';
 type Tab = 'dashboard' | 'budgets' | 'materials' | 'settings' | 'fixed-costs';
 
 export function DashboardLayout() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
-  const [budgets, setBudgets] = useState<Budget[]>([MOCK_BUDGET]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
   const [isNewClientModalOpen, setIsNewClientModalOpen] = useState(false);
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>({
@@ -39,16 +42,99 @@ export function DashboardLayout() {
     pessoal: []
   });
 
-  const handleAddBudget = (newBudget: Budget) => {
+  useEffect(() => {
+    if (user) {
+      supabase.from('orcamentos')
+        .select('*')
+        .order('data_criacao', { ascending: false })
+        .then(({ data }) => {
+          if (data) {
+            setBudgets(data.map(row => row.dados_json as Budget));
+          }
+        });
+
+      supabase.from('configuracoes')
+        .select('*')
+        .eq('tenant_id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            if (data.perfil_empresa) setCompanyProfile(data.perfil_empresa);
+            if (data.catalogo_materiais) setCatalogMaterials(data.catalogo_materiais);
+            if (data.custos_fixos) setFixedCosts(data.custos_fixos);
+          } else {
+            supabase.from('configuracoes').upsert({
+              tenant_id: user.id,
+              perfil_empresa: companyProfile,
+              catalogo_materiais: catalogMaterials,
+              custos_fixos: fixedCosts
+            }).then();
+          }
+        });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
+  const handleProfileChange = async (profile: CompanyProfile) => {
+    setCompanyProfile(profile);
+    if (!user) return;
+    await supabase.from('configuracoes').update({ perfil_empresa: profile }).eq('tenant_id', user.id);
+  };
+
+  const handleCatalogChange = async (catalog: CatalogMaterial[]) => {
+    setCatalogMaterials(catalog);
+    if (!user) return;
+    await supabase.from('configuracoes').update({ catalogo_materiais: catalog }).eq('tenant_id', user.id);
+  };
+
+  const handleFixedCostsChange = async (costs: { operacional: FixedCost[], pessoal: FixedCost[] }) => {
+    setFixedCosts(costs);
+    if (!user) return;
+    await supabase.from('configuracoes').update({ custos_fixos: costs }).eq('tenant_id', user.id);
+  };
+
+  const handleAddBudget = async (newBudget: Budget) => {
+    if (!user) return;
+    
+    // Optimistic UI
     setBudgets([newBudget, ...budgets]);
     setSelectedBudgetId(newBudget.id);
     setActiveTab('budgets');
+    
+    await supabase.from('orcamentos').insert({
+      id: newBudget.id,
+      tenant_id: user.id,
+      titulo: newBudget.title,
+      ambiente: newBudget.environment,
+      descricao: '',
+      valor_total: 0,
+      dados_json: newBudget
+    });
   };
 
-  const updateCurrentBudget = (updates: Partial<Budget>) => {
+  const updateCurrentBudget = async (updates: Partial<Budget>) => {
     if (!selectedBudgetId) return;
-    setBudgets(budgets.map(b => b.id === selectedBudgetId ? { ...b, ...updates } : b));
+    const oldBudget = budgets.find(b => b.id === selectedBudgetId);
+    if (!oldBudget) return;
+    
+    const updatedBudget = { ...oldBudget, ...updates };
+    setBudgets(budgets.map(b => b.id === selectedBudgetId ? updatedBudget : b));
+    
+    await supabase.from('orcamentos').update({
+      titulo: updatedBudget.title,
+      ambiente: updatedBudget.environment,
+      valor_total: updatedBudget.materials.reduce((acc, m) => acc + (m.qty * m.unitPrice) + (m.laborCost || 0), 0) * (1 + (updatedBudget.margin / 100)),
+      dados_json: updatedBudget
+    }).eq('id', selectedBudgetId);
   };
+
 
   const renderContent = () => {
     switch (activeTab) {
@@ -88,7 +174,10 @@ export function DashboardLayout() {
             budgets={budgets}
             onSelectBudget={setSelectedBudgetId}
             onNewBudget={() => setIsNewClientModalOpen(true)}
-            onDeleteBudget={(id) => setBudgets(budgets.filter(b => b.id !== id))}
+            onDeleteBudget={async (id) => {
+              setBudgets(budgets.filter(b => b.id !== id));
+              await supabase.from('orcamentos').delete().eq('id', id);
+            }}
             isDark={isDark}
           />
         );
@@ -96,7 +185,7 @@ export function DashboardLayout() {
         return (
           <FixedCosts 
             fixedCosts={fixedCosts}
-            onFixedCostsChange={setFixedCosts}
+            onFixedCostsChange={handleFixedCostsChange}
             isDark={isDark}
           />
         );
@@ -105,7 +194,7 @@ export function DashboardLayout() {
           <Materials 
             isDark={isDark} 
             catalogMaterials={catalogMaterials}
-            onCatalogChange={setCatalogMaterials}
+            onCatalogChange={handleCatalogChange}
           />
         );
       case 'settings':
@@ -113,7 +202,7 @@ export function DashboardLayout() {
           <Settings 
             isDark={isDark}
             profile={companyProfile}
-            onProfileChange={setCompanyProfile}
+            onProfileChange={handleProfileChange}
           />
         );
       default:
