@@ -28,9 +28,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const checkAdminStatus = async (userId: string) => {
-    // FORCE THIS USER TO BE AN ADMIN TEMPORARILY
-    await supabase.from('admins').insert({ id: userId }).select();
-
     const { data } = await supabase.from('admins').select('id').eq('id', userId).single();
     if (data) {
       setIsAdmin(true);

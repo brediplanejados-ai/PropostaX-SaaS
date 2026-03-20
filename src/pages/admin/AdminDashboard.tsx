@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { Users, CreditCard, Activity, ArrowUpRight, Search, ShieldAlert, CheckCircle2, Ban } from 'lucide-react';
+import { Users, CreditCard, Activity, ArrowUpRight, Search, ShieldAlert, CheckCircle2, Ban, Sun, Moon, LogOut } from 'lucide-react';
 
 interface Subscriber {
   id: string;
@@ -16,6 +16,15 @@ export function AdminDashboard() {
   const { user, isAdmin } = useAuth();
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -71,7 +80,26 @@ export function AdminDashboard() {
               <p className="text-sm text-slate-500 dark:text-slate-400">Gestão de Assinantes & Billing</p>
             </div>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            {/* Quick Actions */}
+            <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-800 pr-4 mr-2">
+              <button 
+                onClick={() => setIsDark(!isDark)}
+                className={`p-2 rounded-xl transition-colors active:scale-95 ${isDark ? 'text-white hover:bg-white/10' : 'text-slate-500 hover:bg-slate-100'}`}
+                title="Alternar Tema"
+              >
+                {isDark ? <Moon size={20} /> : <Sun size={20} />}
+              </button>
+              
+              <button 
+                onClick={async () => await supabase.auth.signOut()}
+                className="p-2 rounded-xl transition-colors active:scale-95 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
+                title="Sair do Painel Adm (Logout)"
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
+
             <div className="text-right">
               <p className="text-sm font-semibold">{user?.email}</p>
               <p className="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider">Super Admin</p>
