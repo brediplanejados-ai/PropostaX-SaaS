@@ -217,7 +217,8 @@ export function DashboardLayout() {
       default:
         return (
           <Dashboard 
-            materials={budgets[0]?.materials || []} 
+            budgets={budgets} 
+            companyProfile={companyProfile}
             fixedCosts={fixedCosts}
             onNavigateToFixedCosts={() => setActiveTab('fixed-costs')} 
             isDark={isDark}
@@ -227,14 +228,14 @@ export function DashboardLayout() {
   };
 
   return (
-    <div className={`min-h-screen pb-32 transition-colors duration-300 ${isDark ? 'bg-[#0a0a0a] text-white' : 'bg-surface text-on-surface'}`}>
+    <div className={`min-h-screen pb-24 sm:pb-32 transition-colors duration-300 ${isDark ? 'bg-[#0a0a0a] text-white' : 'bg-surface text-on-surface'}`}>
       <Header 
         isDark={isDark} 
         onThemeToggle={() => setIsDark(!isDark)} 
         companyProfile={companyProfile}
       />
       
-      <main className="pt-24 px-6 max-w-7xl mx-auto">
+      <main className="pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -252,7 +253,7 @@ export function DashboardLayout() {
       {activeTab === 'dashboard' && (
         <button 
           onClick={() => setIsNewClientModalOpen(true)}
-          className="fixed right-6 bottom-24 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full ambient-shadow flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40"
+          className="fixed right-4 sm:right-6 bottom-20 sm:bottom-24 w-14 h-14 bg-gradient-to-br from-primary to-primary-container text-white rounded-full ambient-shadow flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-40"
         >
           <Plus size={24} />
         </button>

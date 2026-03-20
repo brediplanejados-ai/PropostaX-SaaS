@@ -16,8 +16,8 @@ export const Header = ({
   return (
     <header className={`fixed top-0 w-full z-50 glass-effect border-b ${isDark ? 'border-white/10' : 'border-surface-container-high'}`}>
       <div className="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary-container overflow-hidden ring-2 ring-outline-variant/20">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-10 h-10 min-w-[40px] rounded-full bg-primary-container overflow-hidden ring-2 ring-outline-variant/20">
             <img 
               className="w-full h-full object-cover" 
               src={companyProfile.logo || "https://picsum.photos/seed/carpenter/100/100"} 
@@ -25,12 +25,12 @@ export const Header = ({
               referrerPolicy="no-referrer"
             />
           </div>
-            <h1 className={`flex flex-col gap-1 items-start justify-center`}>
-              <span className={`font-headline font-bold text-xl tracking-tight leading-none ${isDark ? 'text-white' : 'text-primary'}`}>
+            <h1 className={`flex flex-col gap-1 items-start justify-center overflow-hidden`}>
+              <span className={`font-headline font-bold text-lg sm:text-xl tracking-tight leading-none truncate w-full max-w-[140px] sm:max-w-[250px] md:max-w-[400px] ${isDark ? 'text-white' : 'text-primary'}`}>
                 {companyProfile.name}
               </span>
               {profile && (
-                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full whitespace-nowrap ${
                   profile.plano === 'free' ? 'bg-zinc-200 text-zinc-600' :
                   profile.plano === 'pro' ? 'bg-primary/20 text-primary' :
                   'bg-emerald-500/20 text-emerald-600'

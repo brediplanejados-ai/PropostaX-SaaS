@@ -67,12 +67,14 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className={isDark ? "text-indigo-400" : "text-indigo-600"} size={24} />
-            <h2 className="text-3xl font-extrabold tracking-tight">Resumo Financeiro</h2>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-primary text-white rounded-xl flex items-center justify-center font-black text-xl shadow-lg shadow-indigo-500/30">
+              PX
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight">PropostaX</h2>
           </div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-            {companyProfile.name} • Visão Geral
+            Orçamento e Gestão para Marcenaria
           </p>
         </div>
         <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">

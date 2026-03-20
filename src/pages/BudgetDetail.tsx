@@ -78,9 +78,9 @@ export const BudgetDetail = ({
         const opt = {
           margin:       0.5,
           filename:     `Orcamento_${clientName}_${environment}.pdf`,
-          image:        { type: 'jpeg', quality: 0.98 },
+          image:        { type: 'jpeg' as const, quality: 0.98 },
           html2canvas:  { scale: 2, useCORS: true, backgroundColor: isDark ? '#0a0a0a' : '#ffffff' },
-          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' as const }
         };
         await html2pdf().set(opt).from(budgetRef.current).save();
       }
@@ -601,8 +601,8 @@ export const BudgetDetail = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-12 gap-4 items-end">
-                  <div className="col-span-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                  <div className="col-span-1 md:col-span-4">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Descrição Manual</label>
                     <input
                       type="text"
@@ -612,7 +612,7 @@ export const BudgetDetail = ({
                       placeholder="Nome do material"
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-1 md:col-span-2">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Unidade</label>
                     <select
                       value={newItem.unit}
@@ -624,25 +624,27 @@ export const BudgetDetail = ({
                       ))}
                     </select>
                   </div>
-                  <div className="col-span-1">
-                    <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Qtd</label>
-                    <input
-                      type="number"
-                      value={newItem.qty}
-                      onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })}
-                      className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
-                    />
+                  <div className="grid grid-cols-2 gap-4 col-span-1 md:col-span-3">
+                    <div>
+                      <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Qtd</label>
+                      <input
+                        type="number"
+                        value={newItem.qty}
+                        onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })}
+                        className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
+                      />
+                    </div>
+                    <div>
+                      <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Unitário</label>
+                      <input
+                        type="number"
+                        value={newItem.unitPrice}
+                        onChange={(e) => setNewItem({ ...newItem, unitPrice: Number(e.target.value) })}
+                        className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
+                      />
+                    </div>
                   </div>
-                  <div className="col-span-2">
-                    <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Unitário</label>
-                    <input
-                      type="number"
-                      value={newItem.unitPrice}
-                      onChange={(e) => setNewItem({ ...newItem, unitPrice: Number(e.target.value) })}
-                      className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
-                    />
-                  </div>
-                  <div className="col-span-3">
+                  <div className="col-span-1 md:col-span-3">
                     <button
                       onClick={handleAddMaterial}
                       disabled={!newItem.description}
@@ -654,7 +656,7 @@ export const BudgetDetail = ({
                   </div>
                   
                   {/* Labor Fields */}
-                  <div className="col-span-8">
+                  <div className="col-span-1 md:col-span-8">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Descrição da Mão de Obra</label>
                     <input
                       type="text"
@@ -664,7 +666,7 @@ export const BudgetDetail = ({
                       placeholder="Ex: Corte e colagem de fita"
                     />
                   </div>
-                  <div className="col-span-4">
+                  <div className="col-span-1 md:col-span-4">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Valor Mão de Obra (R$)</label>
                     <input
                       type="number"
@@ -677,11 +679,11 @@ export const BudgetDetail = ({
               </div>
               
               <div className="space-y-1">
-                <div className={`grid grid-cols-12 px-4 py-3 text-[10px] font-bold uppercase tracking-widest rounded-t-xl ${isDark ? 'bg-white/5 text-white/60' : 'bg-surface-container-high/30 text-on-surface-variant'}`}>
+                <div className={`hidden lg:grid grid-cols-12 px-4 py-3 text-[10px] font-bold uppercase tracking-widest rounded-t-xl ${isDark ? 'bg-white/5 text-white/60' : 'bg-surface-container-high/30 text-on-surface-variant'}`}>
                   <div className="col-span-3">Descrição</div>
                   <div className="col-span-1 text-center">Qtd</div>
-                  <div className="col-span-1 text-right">Unitário</div>
-                  <div className="col-span-2 text-right">Mão de Obra (R$)</div>
+                  <div className="col-span-2 text-right">Unitário</div>
+                  <div className="col-span-1 text-right">M.O</div>
                   <div className="col-span-2 text-left pl-4">Serviço</div>
                   <div className="col-span-2 text-right">Total Item</div>
                   <div className="col-span-1 text-right"></div>
@@ -689,56 +691,70 @@ export const BudgetDetail = ({
                 {materials.map((item, idx) => (
                   <div 
                     key={idx} 
-                    className={`grid grid-cols-12 px-4 py-3 items-center transition-colors first:border-t-0 border-t group relative ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-surface-container-lowest hover:bg-white border-surface-container-high/20'}`}
+                    className={`flex flex-col lg:grid lg:grid-cols-12 gap-3 lg:gap-0 px-4 py-4 lg:py-3 items-center transition-colors first:border-t-0 border-t group relative ${isDark ? 'bg-white/5 hover:bg-white/10 border-white/10' : 'bg-surface-container-lowest hover:bg-surface-container-low border-surface-container-high/20'}`}
                   >
-                    <div className="col-span-3 flex flex-col">
-                      <span className={`font-bold text-sm truncate ${isDark ? 'text-white' : 'text-on-surface'}`}>{item.description}</span>
-                      <span className={`text-[10px] font-medium truncate ${isDark ? 'text-white/40' : 'text-on-surface-variant'}`}>{item.spec} {item.unit ? `(${item.unit})` : ''}</span>
+                    <div className="w-full lg:col-span-3 flex flex-col items-start text-left pr-8 lg:pr-0">
+                      <span className={`font-bold text-sm lg:truncate w-full ${isDark ? 'text-white' : 'text-on-surface'}`}>{item.description}</span>
+                      <span className={`text-[10px] font-medium lg:truncate w-full ${isDark ? 'text-white/40' : 'text-on-surface-variant'}`}>{item.spec} {item.unit ? `(${item.unit})` : ''}</span>
                     </div>
-                    <div className="col-span-1 px-1">
-                      <input
-                        type="number"
-                        value={item.qty}
-                        onChange={(e) => updateMaterial(idx, { qty: Number(e.target.value) })}
-                        className={`w-full bg-transparent text-center font-bold text-sm outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white' : 'text-on-surface'}`}
-                      />
+                    
+                    <div className="w-full grid grid-cols-2 lg:contents gap-2 items-center">
+                      <div className="lg:col-span-1 px-0 lg:px-1 flex flex-col lg:flex-row items-start lg:items-center lg:justify-center">
+                        <label className="text-[10px] mb-1 lg:hidden font-bold opacity-50 uppercase">Qtd</label>
+                        <input
+                          type="number"
+                          value={item.qty}
+                          onChange={(e) => updateMaterial(idx, { qty: Number(e.target.value) })}
+                          className={`w-full lg:bg-transparent bg-white/5 p-2 lg:p-0 lg:text-center font-bold text-sm outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white' : 'text-on-surface'}`}
+                        />
+                      </div>
+                      <div className="lg:col-span-2 px-0 lg:px-1 flex flex-col lg:flex-row items-start lg:items-center lg:justify-end">
+                        <label className="text-[10px] mb-1 lg:hidden font-bold opacity-50 uppercase">Unitário (R$)</label>
+                        <input
+                          type="number"
+                          value={item.unitPrice}
+                          onChange={(e) => updateMaterial(idx, { unitPrice: Number(e.target.value) })}
+                          className={`w-full lg:bg-transparent bg-white/5 p-2 lg:p-0 text-left lg:text-right text-sm lg:text-xs font-medium outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-1 px-1">
-                      <input
-                        type="number"
-                        value={item.unitPrice}
-                        onChange={(e) => updateMaterial(idx, { unitPrice: Number(e.target.value) })}
-                        className={`w-full bg-transparent text-right text-xs font-medium outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}
-                      />
+
+                    <div className="w-full grid grid-cols-1 lg:contents gap-2 items-center mt-2 lg:mt-0">
+                      <div className="lg:col-span-1 px-0 lg:px-2 flex flex-col lg:flex-row items-start lg:items-center lg:justify-end">
+                        <label className="text-[10px] mb-1 lg:hidden font-bold opacity-50 uppercase">Mão de Obra (R$)</label>
+                        <input
+                          type="number"
+                          value={item.laborCost || 0}
+                          onChange={(e) => updateMaterial(idx, { laborCost: Number(e.target.value) })}
+                          className={`w-full lg:bg-transparent bg-white/5 p-2 lg:p-0 text-left lg:text-right font-bold text-sm outline-none focus:ring-1 ring-primary rounded text-primary`}
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div className="lg:col-span-2 px-0 lg:px-2 flex items-center w-full mt-2 lg:mt-0">
+                        <input
+                          type="text"
+                          value={item.laborDescription || ''}
+                          onChange={(e) => updateMaterial(idx, { laborDescription: e.target.value })}
+                          className={`w-full lg:bg-transparent bg-white/5 p-2 lg:p-0 text-left text-xs lg:text-[10px] font-medium outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white/40' : 'text-on-surface-variant'}`}
+                          placeholder="Descreva o serviço..."
+                        />
+                      </div>
                     </div>
-                    <div className="col-span-2 px-2">
-                      <input
-                        type="number"
-                        value={item.laborCost || 0}
-                        onChange={(e) => updateMaterial(idx, { laborCost: Number(e.target.value) })}
-                        className={`w-full bg-transparent text-right font-bold text-sm outline-none focus:ring-1 ring-primary rounded text-primary`}
-                        placeholder="0,00"
-                      />
+
+                    <div className={`w-full flex lg:contents justify-between items-center mt-4 lg:mt-0 pt-4 lg:pt-0 border-t border-dashed lg:border-none border-outline-variant/30`}>
+                      <span className="lg:hidden font-bold uppercase tracking-widest text-[10px] opacity-50">Total do Item</span>
+                      <div className={`col-span-2 lg:text-right font-extrabold text-lg lg:text-sm ${isDark ? 'text-white/80' : 'text-on-surface'}`}>
+                        R$ {((item.qty * item.unitPrice) + (item.laborCost || 0)).toFixed(2).replace('.', ',')}
+                      </div>
                     </div>
-                    <div className="col-span-2 px-2">
-                      <input
-                        type="text"
-                        value={item.laborDescription || ''}
-                        onChange={(e) => updateMaterial(idx, { laborDescription: e.target.value })}
-                        className={`w-full bg-transparent text-left text-[10px] font-medium outline-none focus:ring-1 ring-primary rounded ${isDark ? 'text-white/40' : 'text-on-surface-variant'}`}
-                        placeholder="Descreva o serviço..."
-                      />
-                    </div>
-                    <div className={`col-span-2 text-right font-extrabold text-sm ${isDark ? 'text-white/80' : 'text-on-surface'}`}>
-                      R$ {((item.qty * item.unitPrice) + (item.laborCost || 0)).toFixed(2).replace('.', ',')}
-                    </div>
-                    <div className="col-span-1 text-right">
+                    
+                    <div className="absolute top-4 right-4 lg:top-auto lg:right-auto lg:relative lg:col-span-1 lg:text-right">
                       <button 
                         data-html2canvas-ignore
                         onClick={() => handleRemoveMaterial(idx)}
-                        className="text-error opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-error/10 rounded"
+                        className="text-error lg:opacity-0 lg:group-hover:opacity-100 transition-opacity p-2 lg:p-1 hover:bg-error/10 bg-error/10 lg:bg-transparent rounded-lg lg:rounded"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} className="lg:w-3.5 lg:h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -767,8 +783,8 @@ export const BudgetDetail = ({
               </div>
 
               {isAddingLabor && (
-                <div data-html2canvas-ignore className={`mb-6 p-4 rounded-xl border grid grid-cols-12 gap-4 items-end ${isDark ? 'bg-white/5 border-white/10' : 'bg-surface-container-lowest border-outline-variant/20'}`}>
-                  <div className="col-span-4">
+                <div data-html2canvas-ignore className={`mb-6 p-4 rounded-xl border grid grid-cols-1 md:grid-cols-12 gap-4 items-end ${isDark ? 'bg-white/5 border-white/10' : 'bg-surface-container-lowest border-outline-variant/20'}`}>
+                  <div className="col-span-1 md:col-span-4">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Função</label>
                     <input
                       type="text"
@@ -778,7 +794,7 @@ export const BudgetDetail = ({
                       placeholder="Ex: Marceneiro"
                     />
                   </div>
-                  <div className="col-span-5">
+                  <div className="col-span-1 md:col-span-5">
                     <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Descrição</label>
                     <input
                       type="text"
@@ -788,23 +804,26 @@ export const BudgetDetail = ({
                       placeholder="Ex: Produção e Montagem"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Valor (R$)</label>
-                    <input
-                      type="number"
-                      value={newLabor.value}
-                      onChange={(e) => setNewLabor({ ...newLabor, value: Number(e.target.value) })}
-                      className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <button
-                      onClick={handleAddLabor}
-                      disabled={!newLabor.role}
-                      className="w-full h-[38px] bg-primary text-white rounded-lg flex items-center justify-center disabled:opacity-50"
-                    >
-                      <Plus size={18} />
-                    </button>
+                  <div className="grid grid-cols-2 lg:contents md:col-span-3 gap-4 lg:gap-0">
+                    <div className="col-span-1 md:col-span-2">
+                      <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>Valor (R$)</label>
+                      <input
+                        type="number"
+                        value={newLabor.value}
+                        onChange={(e) => setNewLabor({ ...newLabor, value: Number(e.target.value) })}
+                        className={`w-full px-3 py-2 rounded-lg text-sm outline-none focus:ring-1 ring-primary ${isDark ? 'bg-white/5 text-white' : 'bg-surface-container-low text-on-surface'}`}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <label className={`text-[10px] font-bold uppercase tracking-wider mb-1 block lg:hidden ${isDark ? 'text-white/60' : 'text-on-surface-variant'}`}>&nbsp;</label>
+                      <button
+                        onClick={handleAddLabor}
+                        disabled={!newLabor.role}
+                        className="w-full h-[38px] bg-primary text-white rounded-lg flex items-center justify-center disabled:opacity-50"
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
