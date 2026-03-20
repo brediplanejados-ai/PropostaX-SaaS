@@ -149,7 +149,8 @@ export function DashboardLayout() {
       case 'dashboard':
         return (
           <Dashboard 
-            materials={budgets[0]?.materials || []} 
+            budgets={budgets} 
+            companyProfile={companyProfile}
             fixedCosts={fixedCosts}
             onNavigateToFixedCosts={() => setActiveTab('fixed-costs')} 
             isDark={isDark}
