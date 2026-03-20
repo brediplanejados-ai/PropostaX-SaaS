@@ -1,7 +1,8 @@
-import { Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Bell, Sun, Moon, LogOut, Crown } from 'lucide-react';
 import { CompanyProfile } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 export const Header = ({ 
   isDark, 
@@ -12,7 +13,8 @@ export const Header = ({
   onThemeToggle: () => void,
   companyProfile: CompanyProfile
 }) => {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
+  const navigate = useNavigate();
   return (
     <header className={`fixed top-0 w-full z-50 glass-effect border-b ${isDark ? 'border-white/10' : 'border-surface-container-high'}`}>
       <div className="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
@@ -41,6 +43,16 @@ export const Header = ({
             </h1>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <button 
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-2 px-3 py-1.5 mr-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold uppercase tracking-widest shadow-md shadow-amber-500/20 hover:scale-105 transition-transform"
+              title="Acessar Modo Deus (Painel SaaS)"
+            >
+              <Crown size={14} />
+              SaaS Admin
+            </button>
+          )}
           <button 
             onClick={onThemeToggle}
             className={`p-2 rounded-xl transition-colors active:scale-95 ${isDark ? 'text-white hover:bg-white/10' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
