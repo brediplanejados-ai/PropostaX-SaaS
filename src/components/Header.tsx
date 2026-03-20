@@ -1,6 +1,7 @@
-import { Bell, Sun, Moon } from 'lucide-react';
+import { Bell, Sun, Moon, LogOut } from 'lucide-react';
 import { CompanyProfile } from '../types';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export const Header = ({ 
   isDark, 
@@ -46,8 +47,13 @@ export const Header = ({
           >
             {isDark ? <Moon size={20} /> : <Sun size={20} />}
           </button>
-          <button className={`p-2 rounded-xl transition-colors active:scale-95 ${isDark ? 'text-white hover:bg-white/10' : 'text-on-surface-variant hover:bg-surface-container-high'}`}>
-            <Bell size={20} />
+          
+          <button 
+            onClick={async () => await supabase.auth.signOut()}
+            className={`p-2 rounded-xl transition-colors active:scale-95 ${isDark ? 'text-error hover:bg-error/10' : 'text-error hover:bg-error/10'}`}
+            title="Sair (Fazer Logout)"
+          >
+            <LogOut size={20} />
           </button>
         </div>
       </div>
