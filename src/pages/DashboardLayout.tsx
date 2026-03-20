@@ -108,7 +108,7 @@ export function DashboardLayout() {
     setSelectedBudgetId(newBudget.id);
     setActiveTab('budgets');
     
-    await supabase.from('orcamentos').insert({
+    const { error } = await supabase.from('orcamentos').insert({
       id: newBudget.id,
       tenant_id: user.id,
       titulo: newBudget.title,
@@ -117,6 +117,10 @@ export function DashboardLayout() {
       valor_total: 0,
       dados_json: newBudget
     });
+
+    if (error) {
+      console.error(error);
+    }
   };
 
   const updateCurrentBudget = async (updates: Partial<Budget>) => {
@@ -127,12 +131,16 @@ export function DashboardLayout() {
     const updatedBudget = { ...oldBudget, ...updates };
     setBudgets(budgets.map(b => b.id === selectedBudgetId ? updatedBudget : b));
     
-    await supabase.from('orcamentos').update({
+    const { error } = await supabase.from('orcamentos').update({
       titulo: updatedBudget.title,
       ambiente: updatedBudget.environment,
       valor_total: updatedBudget.materials.reduce((acc, m) => acc + (m.qty * m.unitPrice) + (m.laborCost || 0), 0) * (1 + (updatedBudget.margin / 100)),
       dados_json: updatedBudget
     }).eq('id', selectedBudgetId);
+
+    if (error) {
+       console.error(error);
+    }
   };
 
 

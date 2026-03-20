@@ -22,7 +22,7 @@ export const NewClientModal = ({ isOpen, onClose, onAdd, isDark }: NewClientModa
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newBudget: Budget = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       ref: `#ORD-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000)}`,
       title: formData.title || `Orçamento - ${formData.environment}`,
       clientName: formData.clientName,
