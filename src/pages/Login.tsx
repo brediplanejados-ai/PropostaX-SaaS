@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdminLogin, setIsAdminLogin] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -19,15 +20,27 @@ export const Login = () => {
       setError(error.message);
       setLoading(false);
     } else {
-      navigate('/');
+      navigate(isAdminLogin ? '/admin' : '/');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-6 relative">
+      <button 
+        onClick={() => setIsAdminLogin(!isAdminLogin)}
+        className={`absolute top-6 right-6 p-3 rounded-full transition-all ${isAdminLogin ? 'bg-amber-100 text-amber-500 shadow-lg' : 'text-zinc-300 hover:text-zinc-400'}`}
+        title="Admin Mode"
+      >
+        <Crown size={20} />
+      </button>
+
       <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-zinc-100">
-        <h1 className="text-3xl font-black text-center mb-2 tracking-tighter text-zinc-900">PropostaX</h1>
-        <p className="text-center text-sm font-bold uppercase tracking-widest text-primary mb-8">Access in to your Account</p>
+        <h1 className="text-3xl font-black text-center mb-2 tracking-tighter text-zinc-900">
+          {isAdminLogin ? 'SaaS Admin' : 'PropostaX'}
+        </h1>
+        <p className="text-center text-sm font-bold uppercase tracking-widest text-primary mb-8">
+          {isAdminLogin ? 'Acesso Restrito ao Painel' : 'Acesse a sua conta'}
+        </p>
         
         {error && <div className="bg-red-50 text-red-500 p-3 rounded-xl text-sm font-medium mb-6">{error}</div>}
         
