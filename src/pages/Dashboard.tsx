@@ -13,7 +13,16 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFixedCosts, isDark }: DashboardProps) => {
-  const [isPrivacyMode, setIsPrivacyMode] = useState(false);
+  const [isPrivacyMode, setIsPrivacyMode] = useState(() => {
+    return localStorage.getItem('isPrivacyMode') === 'true';
+  });
+
+  const togglePrivacyMode = () => {
+    const newValue = !isPrivacyMode;
+    setIsPrivacyMode(newValue);
+    localStorage.setItem('isPrivacyMode', String(newValue));
+  };
+
   const privacyBlur = isPrivacyMode ? "blur-[8px] select-none pointer-events-none" : "";
   const privacyTransition = "transition-[filter] duration-300";
 
@@ -78,7 +87,7 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
           </div>
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => setIsPrivacyMode(!isPrivacyMode)}
+              onClick={togglePrivacyMode}
               className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl transition-all shadow-sm"
               title="Alternar Privacidade"
             >
