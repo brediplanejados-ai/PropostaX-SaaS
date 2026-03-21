@@ -180,9 +180,9 @@ export function AdminDashboard() {
                         onChange={(e) => handlePlanChange(sub.id, e.target.value)}
                         className="bg-transparent font-semibold cursor-pointer outline-none border-none uppercase text-xs tracking-wider"
                       >
-                        <option value="free">Free</option>
-                        <option value="pro">Pro</option>
-                        <option value="premium">Premium</option>
+                        <option value="free" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Free</option>
+                        <option value="pro" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Pro</option>
+                        <option value="premium" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Premium</option>
                       </select>
                     </td>
                     <td className="p-4">
@@ -195,10 +195,10 @@ export function AdminDashboard() {
                           'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400'
                         }`}
                       >
-                        <option value="ativo">Ativo</option>
-                        <option value="inadimplente">Inadimplente</option>
-                        <option value="suspenso">Suspenso</option>
-                        <option value="cancelado">Cancelado</option>
+                        <option value="ativo" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Ativo</option>
+                        <option value="inadimplente" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Inadimplente</option>
+                        <option value="suspenso" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Suspenso</option>
+                        <option value="cancelado" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Cancelado</option>
                       </select>
                     </td>
                     <td className="p-4 text-slate-500">
