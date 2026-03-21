@@ -5,6 +5,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { DashboardLayout } from './pages/DashboardLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { ConfiguradorModulos } from './pages/ConfiguradorModulos';
 
 export default function App() {
   return (
@@ -18,6 +19,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/configurador-modulos" 
+            element={
+              <ProtectedRoute>
+                <ConfiguradorModulos />
               </ProtectedRoute>
             } 
           />
