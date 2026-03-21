@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { TrendingUp, Wallet, CheckCircle, Clock, Calculator, ArrowUpRight, Target, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { TrendingUp, Wallet, CheckCircle, Clock, Calculator, ArrowUpRight, Target, Search, Eye, EyeOff } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'motion/react';
 import { Budget, FixedCost, CompanyProfile } from '../types';
@@ -13,6 +13,10 @@ interface DashboardProps {
 }
 
 export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFixedCosts, isDark }: DashboardProps) => {
+  const [isPrivacyMode, setIsPrivacyMode] = useState(false);
+  const privacyBlur = isPrivacyMode ? "blur-[8px] select-none pointer-events-none" : "";
+  const privacyTransition = "transition-[filter] duration-300";
+
   // Business Metrics Calculation
   const metrics = useMemo(() => {
     const approved = budgets.filter(b => b.status === 'approved' || b.status === 'completed');
@@ -72,9 +76,19 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Visão Geral do Negócio</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">Acompanhamento financeiro e comercial</p>
           </div>
-          <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm w-max">
-            <button className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-lg uppercase tracking-wider">Mês Atual</button>
-            <button className="px-4 py-1.5 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Geral</button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsPrivacyMode(!isPrivacyMode)}
+              className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl transition-all shadow-sm"
+              title="Alternar Privacidade"
+            >
+              {isPrivacyMode ? <EyeOff size={18} /> : <Eye size={18} />}
+              <span className="text-sm font-medium hidden sm:inline">Privacidade</span>
+            </button>
+            <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm w-max">
+              <button className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-xs rounded-lg uppercase tracking-wider">Mês Atual</button>
+              <button className="px-4 py-1.5 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Geral</button>
+            </div>
           </div>
         </div>
 
@@ -87,7 +101,9 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                 <Wallet size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Faturamento Aprovado</span>
               </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">{formatCurrency(metrics.totalRevenue)}</p>
+              <p className={`text-3xl font-black text-slate-900 dark:text-white mt-1 ${privacyTransition} ${privacyBlur}`}>
+                {formatCurrency(metrics.totalRevenue)}
+              </p>
               <div className="flex items-center gap-2 mt-4 text-xs font-bold">
                 <span className="text-emerald-600 dark:text-emerald-400 flex items-center"><TrendingUp size={14} className="mr-1"/> 12.5%</span>
                 <span className="text-slate-400">vs Mês passado</span>
@@ -103,7 +119,9 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                 <Clock size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Valor em Negociação</span>
               </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">{formatCurrency(metrics.potentialRevenue)}</p>
+              <p className={`text-3xl font-black text-slate-900 dark:text-white mt-1 ${privacyTransition} ${privacyBlur}`}>
+                {formatCurrency(metrics.potentialRevenue)}
+              </p>
               <div className="mt-4 text-xs font-bold text-slate-400">
                 <span className="text-amber-600 dark:text-amber-500">{metrics.pendingCount}</span> Orçamento(s) pendente(s)
               </div>
@@ -133,10 +151,14 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                 <ArrowUpRight size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Lucro Bruto Variável</span>
               </div>
-              <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{formatCurrency(metrics.grossProfit)}</p>
+              <p className={`text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1 ${privacyTransition} ${privacyBlur}`}>
+                {formatCurrency(metrics.grossProfit)}
+              </p>
               <div className="mt-4 text-xs font-bold text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between">
                 <span>Custos mat:</span>
-                <span className="text-slate-700 dark:text-slate-300">{formatCurrency(metrics.totalCosts)}</span>
+                <span className={`text-slate-700 dark:text-slate-300 ${privacyTransition} ${privacyBlur}`}>
+                  {formatCurrency(metrics.totalCosts)}
+                </span>
               </div>
             </div>
           </div>
@@ -189,7 +211,11 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                           {b.status === 'approved' || b.status === 'completed' ? 'Aprovado' : b.status === 'sent' ? 'Pendente' : 'Rascunho'}
                         </span>
                       </td>
-                      <td className="p-4 text-right font-medium text-slate-900 dark:text-white">{formatCurrency(valor)}</td>
+                      <td className="p-4 text-right font-medium text-slate-900 dark:text-white">
+                        <span className={`${privacyTransition} ${privacyBlur}`}>
+                          {formatCurrency(valor)}
+                        </span>
+                      </td>
                     </tr>
                   )
                 })}
@@ -224,13 +250,17 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                 <Calculator size={24} />
               </div>
               <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Despesas Fixas e Pessoal</h3>
-              <p className="text-4xl font-black text-slate-900 dark:text-white">{formatCurrency(totalFixedCosts)}</p>
+              <p className={`text-4xl font-black text-slate-900 dark:text-white ${privacyTransition} ${privacyBlur}`}>
+                {formatCurrency(totalFixedCosts)}
+              </p>
               <p className="text-sm font-medium text-slate-500 mt-2">Mensal</p>
             </div>
             
             <div className="mt-8 pt-6 border-t border-dashed border-slate-200 dark:border-slate-800">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Custo Diário da Marcenaria</p>
-              <p className="text-xl font-bold text-amber-600 dark:text-amber-500">{formatCurrency(dailyFixedCost)}</p>
+              <p className={`text-xl font-bold text-amber-600 dark:text-amber-500 ${privacyTransition} ${privacyBlur}`}>
+                {formatCurrency(dailyFixedCost)}
+              </p>
               <p className="text-xs text-slate-400 font-medium mt-1">Custo por dia útil (20 dias)</p>
             </div>
           </button>
@@ -260,7 +290,7 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                     ))}
                   </Pie>
                   <Tooltip 
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: number) => isPrivacyMode ? '***' : formatCurrency(value)}
                     contentStyle={{ backgroundColor: isDark ? '#1E293B' : '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     itemStyle={{ fontWeight: 'bold' }}
                   />
@@ -274,7 +304,9 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">{item.name}</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatCurrency(item.value)}</p>
+                    <p className={`text-sm font-bold text-slate-900 dark:text-white ${privacyTransition} ${privacyBlur}`}>
+                      {formatCurrency(item.value)}
+                    </p>
                   </div>
                 </div>
               ))}
