@@ -10,27 +10,35 @@ interface NavItemProps {
   onClick: () => void;
 }
 
-const NavItem = ({ icon: Icon, label, active, onClick }: NavItemProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "flex flex-col items-center justify-center px-2 py-1.5 transition-all duration-200 min-w-[64px]",
-      active 
-        ? "bg-primary text-white rounded-xl scale-100" 
-        : "text-on-surface-variant hover:text-primary scale-90"
-    )}
-  >
-    {React.isValidElement(Icon) ? (
-      <div className={cn("mb-0.5 flex w-5 h-5 items-center justify-center", active ? "[&>svg]:stroke-current" : "")}>
-        {Icon}
-      </div>
-    ) : (
-      // @ts-ignore
-      <Icon size={20} className={cn("mb-0.5", active && "fill-current")} />
-    )}
-    <span className="text-[10px] font-bold uppercase tracking-wider mt-1 text-center leading-none">{label}</span>
-  </button>
-);
+const NavItem = ({ icon: Icon, label, active, onClick, id }: NavItemProps & { id?: string }) => {
+  const isDashboard = id === 'dashboard';
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center justify-center px-2 py-1.5 transition-all duration-200 min-w-[64px]",
+        active
+          ? isDashboard
+            ? "bg-primary text-white rounded-full p-3 -translate-y-4 shadow-lg shadow-primary/30 scale-110"
+            : "text-primary scale-100"
+          : "text-on-surface-variant hover:text-primary scale-90"
+      )}
+    >
+      {React.isValidElement(Icon) ? (
+        <div className={cn("mb-0.5 flex w-5 h-5 items-center justify-center", active ? "[&>svg]:stroke-current" : "")}>
+          {Icon}
+        </div>
+      ) : (
+        // @ts-ignore
+        <Icon size={isDashboard && active ? 24 : 20} className={cn(isDashboard && active ? "mb-0" : "mb-0.5", active && "fill-current")} />
+      )}
+      {!(isDashboard && active) && (
+        <span className="text-[10px] font-bold uppercase tracking-wider mt-1 text-center leading-none">{label}</span>
+      )}
+    </button>
+  );
+};
 
 interface BottomNavProps {
   activeTab: string;
@@ -52,6 +60,7 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
       {MENU_ITEMS.map((item) => (
         <NavItem
           key={item.id}
+          id={item.id}
           icon={item.icon}
           label={item.label}
           active={activeTab === item.id || window.location.pathname === item.path}

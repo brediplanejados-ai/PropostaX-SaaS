@@ -1,4 +1,5 @@
-import { Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Bell, Sun, Moon, LogOut, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { CompanyProfile } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -13,6 +14,8 @@ export const Header = ({
   companyProfile: CompanyProfile
 }) => {
   const { profile } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <header className={`fixed top-0 w-full z-50 glass-effect border-b ${isDark ? 'border-white/10' : 'border-surface-container-high'}`}>
       <div className="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
@@ -41,6 +44,22 @@ export const Header = ({
             </h1>
         </div>
         <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center mr-4 gap-2">
+            <button 
+              onClick={() => navigate('/orcamentos')} 
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-colors shadow-sm"
+              title="Novo Orçamento"
+            >
+               <Plus size={16} /> Novo Orçamento
+            </button>
+            <button 
+              onClick={() => navigate('/clientes')} 
+              className="flex items-center gap-1.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors shadow-sm"
+              title="Novo Cliente"
+            >
+               <Plus size={16} /> Novo Cliente
+            </button>
+          </div>
           <button 
             onClick={onThemeToggle}
             className={`p-2 rounded-xl transition-colors active:scale-95 ${isDark ? 'text-white hover:bg-white/10' : 'text-on-surface-variant hover:bg-surface-container-high'}`}
