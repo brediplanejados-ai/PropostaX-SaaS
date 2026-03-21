@@ -8,4 +8,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Variáveis de ambiente do Supabase não encontradas. Verifique o arquivo .env');
 }
 
-export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder');
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder',
+  {
+    auth: {
+      storage: window.sessionStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  }
+);
