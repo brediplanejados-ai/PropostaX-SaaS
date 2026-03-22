@@ -43,9 +43,10 @@ const NavItem = ({ icon: Icon, label, active, onClick, id }: NavItemProps & { id
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  isDark: boolean;
 }
 
-export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
+export const BottomNav = ({ activeTab, onTabChange, isDark }: BottomNavProps) => {
   const navigate = useNavigate();
 
   const MENU_ITEMS: Array<{ id: string; label: string; icon: any; path?: string }> = [
@@ -56,7 +57,12 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-surface-container-high rounded-t-3xl ambient-shadow px-2 pb-6 pt-3 flex justify-evenly items-center max-w-7xl mx-auto left-1/2 -translate-x-1/2">
+    <nav className={cn(
+      "fixed bottom-0 left-0 w-full z-50 rounded-t-3xl px-2 pb-6 pt-3 flex justify-evenly items-center max-w-7xl mx-auto left-1/2 -translate-x-1/2",
+      isDark 
+        ? "bg-[#121214]/80 backdrop-blur-2xl border-t border-white/5 shadow-[0_-8px_30px_rgb(0,0,0,0.5)]" 
+        : "bg-white border-t border-surface-container-high ambient-shadow"
+    )}>
       {MENU_ITEMS.map((item) => (
         <NavItem
           key={item.id}

@@ -45,7 +45,11 @@
 }
 
 .glass-effect {
-  @apply bg-white/80 backdrop-blur-xl;
+  @apply bg-white/80 backdrop-blur-xl transition-colors duration-300;
+}
+
+.dark .glass-effect {
+  @apply bg-[#0a0a0a]/60 backdrop-blur-2xl;
 }
 
 .ambient-shadow {

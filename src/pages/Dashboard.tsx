@@ -1,8 +1,48 @@
 import { useState, useMemo } from 'react';
-import { TrendingUp, Wallet, CheckCircle, Clock, Calculator, ArrowUpRight, Target, Search, Eye, EyeOff } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { TrendingUp, Wallet, CheckCircle, Clock, Calculator, ArrowUpRight, Target, Search, Eye, EyeOff, User } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label } from 'recharts';
 import { motion } from 'motion/react';
 import { Budget, FixedCost, CompanyProfile } from '../types';
+
+// Sparkline component for metric trends
+const Sparkline = ({ data, color }: { data: number[], color: string }) => {
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min;
+  const width = 100;
+  const height = 30;
+  
+  const points = data.map((val, i) => {
+    const x = (i / (data.length - 1)) * width;
+    // If all values are zero, center the line vertically (height / 2)
+    const allZero = data.every(v => v === 0);
+    const y = allZero ? height / 2 : height - ((val - min) / (range || 1)) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-8 mt-2 opacity-50 overflow-visible">
+      <defs>
+        <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d={`M 0 ${height} ${points.split(' ').map((p, i) => (i === 0 ? 'M' : 'L') + p).join(' ')}`}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d={`M 0 ${height} ${points.split(' ').map((p, i) => (i === 0 ? 'M' : 'L') + p).join(' ')} V ${height} H 0 Z`}
+        fill={`url(#gradient-${color.replace('#', '')})`}
+      />
+    </svg>
+  );
+};
 
 interface DashboardProps {
   budgets: Budget[];
@@ -56,6 +96,74 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
     };
   }, [budgets]);
 
+  // Calculate trends for sparklines
+  const trends = useMemo(() => {
+    const lastSixMonths = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date();
+      d.setMonth(d.getMonth() - (5 - i));
+      return {
+        month: d.getMonth(),
+        year: d.getFullYear(),
+        label: d.toLocaleDateString('pt-BR', { month: 'short' })
+      };
+    });
+
+    const getMonthlyValue = (buds: Budget[], month: number, year: number, type: 'revenue' | 'potential' | 'profit' | 'winrate') => {
+      const monthlyBuds = buds.filter(b => {
+        const d = new Date(b.date);
+        return d.getMonth() === month && d.getFullYear() === year;
+      });
+
+      if (type === 'winrate') {
+        const approved = monthlyBuds.filter(b => b.status === 'approved' || b.status === 'completed').length;
+        return monthlyBuds.length > 0 ? (approved / monthlyBuds.length) * 100 : 0;
+      }
+
+      const calcTotal = (budsList: Budget[]) => budsList.reduce((sum, b) => {
+        const costs = b.materials.reduce((acc, m) => acc + (m.qty * m.unitPrice) + (m.laborCost || 0), 0) + (b.labor ? b.labor.reduce((acc, l) => acc + l.value, 0) : 0);
+        return sum + (costs * (1 + (b.margin / 100)));
+      }, 0);
+
+      const calcCosts = (budsList: Budget[]) => budsList.reduce((sum, b) => {
+        return sum + b.materials.reduce((acc, m) => acc + (m.qty * m.unitPrice) + (m.laborCost || 0), 0) + (b.labor ? b.labor.reduce((acc, l) => acc + l.value, 0) : 0);
+      }, 0);
+
+      if (type === 'revenue') {
+        const approved = monthlyBuds.filter(b => b.status === 'approved' || b.status === 'completed');
+        return calcTotal(approved);
+      }
+      if (type === 'potential') {
+        const pending = monthlyBuds.filter(b => b.status === 'sent' || b.status === 'draft');
+        return calcTotal(pending);
+      }
+      if (type === 'profit') {
+        const approved = monthlyBuds.filter(b => b.status === 'approved' || b.status === 'completed');
+        return calcTotal(approved) - calcCosts(approved);
+      }
+      return 0;
+    };
+
+    const getPercentageChange = (values: number[]) => {
+      const current = values[values.length - 1];
+      const previous = values[values.length - 2];
+      if (!previous || previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    return {
+      revenue: lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'revenue')),
+      potential: lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'potential')),
+      winrate: lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'winrate')),
+      profit: lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'profit')),
+      changes: {
+        revenue: getPercentageChange(lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'revenue'))),
+        potential: getPercentageChange(lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'potential'))),
+        winrate: getPercentageChange(lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'winrate'))),
+        profit: getPercentageChange(lastSixMonths.map(m => getMonthlyValue(budgets, m.month, m.year, 'profit')))
+      }
+    };
+  }, [budgets]);
+
   const totalFixedCosts = useMemo(() => 
     [...fixedCosts.operacional, ...fixedCosts.pessoal].reduce((acc, item) => acc + item.value, 0)
   , [fixedCosts]);
@@ -103,71 +211,95 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Faturamento */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all" />
+          <div className="bg-[#121214] p-6 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
             <div className="relative">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                <Wallet size={18} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Faturamento Aprovado</span>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Wallet size={12} className="text-slate-400" />
+                  Faturamento Aprovado
+                </h3>
+                {trends.changes.revenue !== 0 && (
+                  <div className="bg-emerald-500/10 px-2 py-0.5 rounded-full flex items-center ring-1 ring-emerald-500/20">
+                    <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1">
+                      <TrendingUp size={10} /> {trends.changes.revenue > 0 ? '+' : ''}{trends.changes.revenue.toFixed(0)}%
+                    </span>
+                  </div>
+                )}
               </div>
-              <p className={`text-3xl font-black text-slate-900 dark:text-white mt-1 ${privacyTransition} ${privacyBlur}`}>
+              <p className={`text-3xl font-black text-white ${privacyTransition} ${privacyBlur}`}>
                 {formatCurrency(metrics.totalRevenue)}
               </p>
-              <div className="flex items-center gap-2 mt-4 text-xs font-bold">
-                <span className="text-emerald-600 dark:text-emerald-400 flex items-center"><TrendingUp size={14} className="mr-1"/> 12.5%</span>
-                <span className="text-slate-400">vs Mês passado</span>
+              <div className="mt-4">
+                <Sparkline data={trends.revenue} color="#10B981" />
               </div>
             </div>
           </div>
 
           {/* Em Andamento */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/20 transition-all" />
+          <div className="bg-[#121214] p-6 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
             <div className="relative">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                <Clock size={18} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Valor em Negociação</span>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Clock size={12} className="text-slate-400" />
+                  Valor em Negociação
+                </h3>
+                {trends.changes.potential !== 0 ? (
+                  <span className={`px-2 py-0.5 rounded-full ${trends.changes.potential > 0 ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'} text-[10px] font-black tracking-wider uppercase`}>
+                    {trends.changes.potential > 0 ? '+' : ''}{trends.changes.potential.toFixed(0)}%
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[10px] font-black tracking-wider uppercase">Pending</span>
+                )}
               </div>
-              <p className={`text-3xl font-black text-slate-900 dark:text-white mt-1 ${privacyTransition} ${privacyBlur}`}>
+              <p className={`text-3xl font-black text-white ${privacyTransition} ${privacyBlur}`}>
                 {formatCurrency(metrics.potentialRevenue)}
               </p>
-              <div className="mt-4 text-xs font-bold text-slate-400">
-                <span className="text-amber-600 dark:text-amber-500">{metrics.pendingCount}</span> Orçamento(s) pendente(s)
+              <div className="mt-4">
+                <Sparkline data={trends.potential} color="#F59E0B" />
               </div>
             </div>
           </div>
 
           {/* Taxa de Conversão */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-500/20 transition-all" />
+          <div className="bg-[#121214] p-6 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
             <div className="relative">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                <Target size={18} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Taxa de Conversão</span>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <Target size={12} className="text-slate-400" />
+                  Taxa de Conversão
+                </h3>
+                {trends.changes.winrate !== 0 && (
+                  <span className={`px-2 py-0.5 rounded-full ${trends.changes.winrate > 0 ? 'bg-indigo-500/10 text-indigo-500' : 'bg-red-500/10 text-red-500'} text-[10px] font-black tracking-wider shadow-sm ${trends.changes.winrate > 0 ? 'shadow-indigo-500/20' : 'shadow-red-500/20'}`}>
+                    {trends.changes.winrate > 0 ? '+' : ''}{trends.changes.winrate.toFixed(0)}%
+                  </span>
+                )}
               </div>
-              <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">{metrics.winRate}%</p>
-              <div className="mt-4 text-xs font-bold text-slate-400 flex items-center gap-1">
-                <CheckCircle size={14} className="text-indigo-500" />
-                {metrics.approvedCount} aprovados de {budgets.length}
+              <p className="text-3xl font-black text-white mt-1">{metrics.winRate}%</p>
+              <div className="mt-4">
+                <Sparkline data={trends.winrate} color="#6366F1" />
               </div>
             </div>
           </div>
 
           {/* Lucro Projetado */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/50">
+          <div className="bg-[#121214] p-6 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
             <div className="relative">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-                <ArrowUpRight size={18} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Lucro Bruto Variável</span>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                  <TrendingUp size={12} className="text-slate-400" />
+                  Lucro Bruto Variável
+                </h3>
+                {trends.changes.profit !== 0 && (
+                  <span className={`px-2 py-0.5 rounded-full ${trends.changes.profit > 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} text-[10px] font-black tracking-wider shadow-sm ${trends.changes.profit > 0 ? 'shadow-emerald-500/20' : 'shadow-red-500/20'}`}>
+                    {trends.changes.profit > 0 ? '+' : ''}{trends.changes.profit.toFixed(0)}%
+                  </span>
+                )}
               </div>
-              <p className={`text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1 ${privacyTransition} ${privacyBlur}`}>
+              <p className={`text-3xl font-black text-white mt-1 ${privacyTransition} ${privacyBlur}`}>
                 {formatCurrency(metrics.grossProfit)}
               </p>
-              <div className="mt-4 text-xs font-bold text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between">
-                <span>Custos mat:</span>
-                <span className={`text-slate-700 dark:text-slate-300 ${privacyTransition} ${privacyBlur}`}>
-                  {formatCurrency(metrics.totalCosts)}
-                </span>
+              <div className="mt-4">
+                <Sparkline data={trends.profit} color="#10B981" />
               </div>
             </div>
           </div>
@@ -181,12 +313,12 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Gestão de Projetos</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400">Projetos recentes e andamento</p>
           </div>
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input 
               type="text" 
-              placeholder="Buscar projeto..." 
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
+              placeholder="Buscar projetos..." 
+              className="w-full pl-12 pr-4 py-3 bg-[#121214] border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-lg transition-all"
             />
           </div>
         </div>
@@ -207,20 +339,30 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                 {budgets.slice(0, 5).map(b => {
                   const valor = (b.materials.reduce((acc, m) => acc + (m.qty * m.unitPrice) + (m.laborCost || 0), 0) + (b.labor ? b.labor.reduce((acc, l) => acc + l.value, 0) : 0)) * (1 + (b.margin / 100));
                   return (
-                    <tr key={b.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="p-4 font-bold text-slate-900 dark:text-white">{b.clientName}</td>
-                      <td className="p-4 text-slate-500 dark:text-slate-400">{b.environment}</td>
-                      <td className="p-4 text-slate-500">{new Date(b.date).toLocaleDateString('pt-BR')}</td>
+                    <tr key={b.id} className="hover:bg-white/5 transition-colors border-b border-white/[0.02] last:border-0 group">
                       <td className="p-4">
-                        <span className={`inline-block text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${
-                          b.status === 'approved' || b.status === 'completed' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400' :
-                          b.status === 'draft' ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400' :
-                          'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 overflow-hidden border border-white/10">
+                            <User size={20} />
+                          </div>
+                          <div>
+                            <p className="font-bold text-white group-hover:text-indigo-400 transition-colors">{b.clientName}</p>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-tighter">Cliente VIP</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-slate-400 font-medium">{b.environment}</td>
+                      <td className="p-4 text-slate-500 font-medium">15 Out 2023</td>
+                      <td className="p-4">
+                        <span className={`inline-block text-[10px] font-black px-3 py-1 rounded-lg uppercase tracking-widest ${
+                          b.status === 'approved' || b.status === 'completed' 
+                            ? 'bg-emerald-500/10 text-emerald-500' 
+                            : 'bg-amber-500/10 text-amber-500'
                         }`}>
-                          {b.status === 'approved' || b.status === 'completed' ? 'Aprovado' : b.status === 'sent' ? 'Pendente' : 'Rascunho'}
+                          {b.status === 'approved' || b.status === 'completed' ? 'APROVADO' : 'PENDENTE'}
                         </span>
                       </td>
-                      <td className="p-4 text-right font-medium text-slate-900 dark:text-white">
+                      <td className="p-4 text-right font-bold text-white">
                         <span className={`${privacyTransition} ${privacyBlur}`}>
                           {formatCurrency(valor)}
                         </span>
@@ -295,25 +437,38 @@ export const Dashboard = ({ budgets, companyProfile, fixedCosts, onNavigateToFix
                     stroke="none"
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
                     ))}
+                    <Label
+                      value={formatCurrency(metrics.totalRevenue)}
+                      position="center"
+                      fill="#fff"
+                      style={{ fontSize: '18px', fontWeight: '900' }}
+                    />
+                    <Label
+                      value="Total"
+                      position="center"
+                      dy={20}
+                      fill="#64748b"
+                      style={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px' }}
+                    />
                   </Pie>
                   <Tooltip 
                     formatter={(value: number) => isPrivacyMode ? '***' : formatCurrency(value)}
-                    contentStyle={{ backgroundColor: isDark ? '#1E293B' : '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    itemStyle={{ fontWeight: 'bold' }}
+                    contentStyle={{ backgroundColor: '#121214', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
+                    itemStyle={{ fontWeight: 'bold', color: '#fff' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 border-t border-white/5">
               {chartData.filter(d => d.name !== 'Sem Dados').map(item => (
                 <div key={item.name} className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">{item.name}</p>
-                    <p className={`text-sm font-bold text-slate-900 dark:text-white ${privacyTransition} ${privacyBlur}`}>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{item.name}</p>
+                    <p className={`text-xs font-bold text-white ${privacyTransition} ${privacyBlur}`}>
                       {formatCurrency(item.value)}
                     </p>
                   </div>

@@ -269,6 +269,7 @@ export function DashboardLayout() {
       <BottomNav 
         activeTab={activeTab === 'fixed-costs' ? 'dashboard' : activeTab} 
         onTabChange={(tab) => setActiveTab(tab as Tab)} 
+        isDark={isDark}
       />
     </div>
   );

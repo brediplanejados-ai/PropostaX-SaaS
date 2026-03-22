@@ -1,5 +1,6 @@
 import { Bell, Sun, Moon, LogOut, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '../lib/utils';
 import { CompanyProfile } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
