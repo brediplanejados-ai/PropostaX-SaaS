@@ -12,6 +12,8 @@ import { BudgetList } from './BudgetList';
 import { Settings } from './Settings';
 import { Plus, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 import { Material, FixedCost, CatalogMaterial, Budget, CompanyProfile } from '../types';
 import { MOCK_MATERIALS, MOCK_BUDGET } from '../data';
 
@@ -19,6 +21,8 @@ type Tab = 'dashboard' | 'budgets' | 'settings' | 'fixed-costs';
 
 export function DashboardLayout() {
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
@@ -36,11 +40,19 @@ export function DashboardLayout() {
   const currentBudget = budgets.find(b => b.id === selectedBudgetId);
 
   const [catalogMaterials, setCatalogMaterials] = useState<CatalogMaterial[]>(MOCK_MATERIALS);
-  const [isDark, setIsDark] = useState(false);
   const [fixedCosts, setFixedCosts] = useState<{ operacional: FixedCost[], pessoal: FixedCost[] }>({
     operacional: [],
     pessoal: []
   });
+
+  // Sync activeTab with URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/budgets') setActiveTab('budgets');
+    else if (path === '/settings') setActiveTab('settings');
+    else if (path === '/fixed-costs') setActiveTab('fixed-costs');
+    else setActiveTab('dashboard');
+  }, [location.pathname]);
 
   useEffect(() => {
     if (user) {
@@ -74,13 +86,6 @@ export function DashboardLayout() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
 
   const handleProfileChange = async (profile: CompanyProfile) => {
     setCompanyProfile(profile);
@@ -172,7 +177,7 @@ export function DashboardLayout() {
                 onBudgetChange={updateCurrentBudget}
                 catalogMaterials={catalogMaterials}
                 isDark={isDark}
-                onThemeToggle={() => setIsDark(!isDark)}
+                onThemeToggle={toggleTheme}
                 companyProfile={companyProfile}
               />
             </div>
@@ -225,7 +230,7 @@ export function DashboardLayout() {
     <div className={`min-h-screen pb-24 sm:pb-32 transition-colors duration-300 ${isDark ? 'bg-[#0a0a0a] text-white' : 'bg-surface text-on-surface'}`}>
       <Header 
         isDark={isDark} 
-        onThemeToggle={() => setIsDark(!isDark)} 
+        onThemeToggle={toggleTheme} 
         companyProfile={companyProfile}
       />
       
@@ -263,7 +268,6 @@ export function DashboardLayout() {
       <BottomNav 
         activeTab={activeTab === 'fixed-costs' ? 'dashboard' : activeTab} 
         onTabChange={(tab) => setActiveTab(tab as Tab)} 
-        isDark={isDark}
       />
     </div>
   );

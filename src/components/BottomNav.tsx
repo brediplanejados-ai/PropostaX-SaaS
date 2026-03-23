@@ -1,7 +1,8 @@
 import React from 'react';
 import { LayoutDashboard, FileText, Package, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavItemProps {
   icon: React.ElementType | React.ReactNode;
@@ -43,16 +44,18 @@ const NavItem = ({ icon: Icon, label, active, onClick, id }: NavItemProps & { id
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  isDark: boolean;
 }
 
-export const BottomNav = ({ activeTab, onTabChange, isDark }: BottomNavProps) => {
+export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isDark } = useTheme();
 
   const MENU_ITEMS: Array<{ id: string; label: string; icon: any; path?: string }> = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'budgets', label: 'Orçamentos', icon: FileText },
-    { id: 'settings', label: 'Ajustes', icon: Settings }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+    { id: 'budgets', label: 'Orçamentos', icon: FileText, path: '/budgets' },
+    { id: 'modulos', label: 'Módulos', icon: Package, path: '/configurador-modulos' },
+    { id: 'settings', label: 'Ajustes', icon: Settings, path: '/settings' }
   ];
 
   return (
@@ -68,7 +71,7 @@ export const BottomNav = ({ activeTab, onTabChange, isDark }: BottomNavProps) =>
           id={item.id}
           icon={item.icon}
           label={item.label}
-          active={activeTab === item.id || window.location.pathname === item.path}
+          active={activeTab === item.id || location.pathname === item.path}
           onClick={() => {
             if (item.path) {
               navigate(item.path);

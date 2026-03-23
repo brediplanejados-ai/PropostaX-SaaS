@@ -6,6 +6,7 @@ import { calcularPlanoDeCorte } from '../lib/calcBredi';
 import { Package, Ruler, Hammer, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useTheme } from '../context/ThemeContext';
 
 // Fix typings for autotable
 interface jsPDFCustom extends jsPDF {
@@ -49,6 +50,7 @@ const exportarPDF = (dados: any, dimensoes: any, material: string) => {
     ["Dobradiças", `${dados.ferragens.dobradicas} unidades`],
     ["Parafusos (Est.)", `${dados.ferragens.parafusos} unidades`],
     ["Cantoneiras", `${dados.ferragens.cantoneiras} unidades`],
+    ...(dados.ferragens.pinosPrateleira > 0 ? [["Pinos de Prateleira", `${dados.ferragens.pinosPrateleira} unidades`]] : []),
     ["Fita de Borda Total", dados.resumoCompra.fitaBorda],
     ["Área de MDF Estimada", dados.resumoCompra.totalMDF]
   ];
@@ -70,7 +72,7 @@ const exportarPDF = (dados: any, dimensoes: any, material: string) => {
 };
 
 // Componente Croqui Visual
-const ModuleSketch = ({ dimensoes, material, isDark }: { dimensoes: { largura: number, altura: number, prof: number }, material: string, isDark: boolean }) => {
+const ModuleSketch = ({ dimensoes, material, isDark, numPrateleiras }: { dimensoes: { largura: number, altura: number, prof: number }, material: string, isDark: boolean, numPrateleiras: number }) => {
   const maxW = 320;
   const maxH = 320;
   
@@ -85,13 +87,28 @@ const ModuleSketch = ({ dimensoes, material, isDark }: { dimensoes: { largura: n
   const strokeColor = isDark ? "#818cf8" : "#4f46e5";
   const textColor = isDark ? "#c7d2fe" : "#4338ca";
 
+  // Cálculo das prateleiras (linhas horizontais)
+  const shelfLines = [];
+  if (numPrateleiras > 0) {
+    const spacing = drawH / (numPrateleiras + 1);
+    for (let i = 1; i <= numPrateleiras; i++) {
+      shelfLines.push(spacing * i);
+    }
+  }
+
   return (
     <div className={`shadow-xl border transition-all duration-300 flex items-center justify-center rounded-2xl mb-8 flex-shrink-0 ${isDark ? 'bg-[#111111] border-white/10' : 'bg-white border-indigo-100'}`}
          style={{ width: `${maxW + 120}px`, height: `${maxH + 120}px` }}>
       <svg width={drawW + 60} height={drawH + 60} viewBox={`-30 -30 ${drawW + 60} ${drawH + 60}`} className="overflow-visible">
+        {/* Corpo do Móvel */}
         <rect x="0" y="0" width={drawW} height={drawH} fill={isDark ? "#1e1e2d" : "#f8fafc"} stroke={strokeColor} strokeWidth="2" rx="2" />
         <rect x="5" y="5" width={Math.max(drawW - 10, 0)} height={Math.max(drawH - 10, 0)} fill="none" stroke={strokeColor} strokeWidth="1" opacity="0.4" />
         
+        {/* Prateleiras */}
+        {shelfLines.map((y, idx) => (
+          <line key={idx} x1="5" y1={y} x2={drawW - 5} y2={y} stroke={strokeColor} strokeWidth="1.5" strokeDasharray="4 2" opacity="0.6" />
+        ))}
+
         {/* Cota Largura */}
         <line x1="0" y1="-15" x2={drawW} y2="-15" stroke={strokeColor} strokeWidth="1.5" markerStart="url(#arrow)" markerEnd="url(#arrow)" />
         <line x1="0" y1="-20" x2="0" y2="-5" stroke={strokeColor} strokeWidth="1.5" />
@@ -120,7 +137,7 @@ const ModuleSketch = ({ dimensoes, material, isDark }: { dimensoes: { largura: n
 
 
 export function ConfiguradorModulos() {
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const [companyProfile] = useState<CompanyProfile>({
     name: 'PropostaX',
     budgetTerms: '',
@@ -132,11 +149,12 @@ export function ConfiguradorModulos() {
   });
 
   const [dimensoes, setDimensoes] = useState({ largura: 600, altura: 700, prof: 550 });
+  const [numPrateleiras, setNumPrateleiras] = useState(1);
   const [material, setMaterial] = useState('Louro Freijó');
   const [plano, setPlano] = useState<ReturnType<typeof calcularPlanoDeCorte> | null>(null);
 
   const handleGerarPlano = () => {
-    const resultado = calcularPlanoDeCorte(dimensoes.largura, dimensoes.altura, dimensoes.prof);
+    const resultado = calcularPlanoDeCorte(dimensoes.largura, dimensoes.altura, dimensoes.prof, numPrateleiras);
     setPlano(resultado);
   };
 
@@ -144,7 +162,7 @@ export function ConfiguradorModulos() {
     <div className={`min-h-screen pb-24 sm:pb-32 transition-colors duration-300 ${isDark ? 'bg-[#0a0a0a] text-white' : 'bg-surface text-on-surface'}`}>
       <Header 
         isDark={isDark} 
-        onThemeToggle={() => setIsDark(!isDark)} 
+        onThemeToggle={toggleTheme} 
         companyProfile={companyProfile}
       />
       
@@ -185,6 +203,18 @@ export function ConfiguradorModulos() {
             </div>
 
             <div>
+              <label className={`block text-sm font-medium ${isDark ? 'text-white/80' : 'text-gray-700'}`}>Prateleiras Internas</label>
+              <input 
+                type="number" 
+                min="0"
+                max="10"
+                value={numPrateleiras} 
+                onChange={(e) => setNumPrateleiras(Number(e.target.value))} 
+                className={`w-full border rounded p-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-300'}`} 
+              />
+            </div>
+
+            <div>
               <label className={`block text-sm font-medium ${isDark ? 'text-white/80' : 'text-gray-700'}`}>Material / Cor</label>
               <select 
                 value={material} 
@@ -211,7 +241,7 @@ export function ConfiguradorModulos() {
         <div className={`flex-1 flex flex-col items-center overflow-y-auto p-4 sm:p-8 ${isDark ? 'bg-[#050505]' : 'bg-slate-100'}`}>
           
           {/* CROQUI VISUAL COM COTAS */}
-          <ModuleSketch dimensoes={dimensoes} material={material} isDark={isDark} />
+          <ModuleSketch dimensoes={dimensoes} material={material} isDark={isDark} numPrateleiras={numPrateleiras} />
 
           {plano && (
             <div className={`w-full max-w-4xl p-6 rounded-2xl shadow-lg animate-in fade-in slide-in-from-bottom-4 ${isDark ? 'bg-surface-container-low' : 'bg-white'}`}>
@@ -259,6 +289,10 @@ export function ConfiguradorModulos() {
                       <div className={`p-3 rounded-xl text-center border ${isDark ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-gray-50'}`}>
                         <div className="text-2xl font-bold text-primary">{plano.ferragens.cantoneiras}</div>
                         <div className="text-[10px] uppercase tracking-wide">Cantoneiras</div>
+                      </div>
+                      <div className={`p-3 rounded-xl text-center border ${isDark ? 'border-white/10 bg-white/5' : 'border-gray-100 bg-gray-50'}`}>
+                        <div className="text-2xl font-bold text-primary">{plano.ferragens.pinosPrateleira}</div>
+                        <div className="text-[10px] uppercase tracking-wide">Pinos Prat.</div>
                       </div>
                     </div>
                   </div>
