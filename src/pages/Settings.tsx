@@ -1,16 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Building2, Upload, Trash2, Save, CheckCircle2, FileText, Layout } from 'lucide-react';
-import { CompanyProfile } from '../types';
+import { Building2, Upload, Trash2, Save, CheckCircle2, FileText, Layout, Package, Search } from 'lucide-react';
+import { CompanyProfile, CatalogMaterial } from '../types';
 import { cn } from '../lib/utils';
+import { Materials } from './Materials';
 
 interface SettingsProps {
   isDark: boolean;
   profile: CompanyProfile;
   onProfileChange: (profile: CompanyProfile) => void;
+  catalogMaterials: CatalogMaterial[];
+  onCatalogChange: (materials: CatalogMaterial[]) => void;
 }
 
-export const Settings = ({ isDark, profile, onProfileChange }: SettingsProps) => {
+export const Settings = ({ 
+  isDark, 
+  profile, 
+  onProfileChange,
+  catalogMaterials,
+  onCatalogChange
+}: SettingsProps) => {
+  const [activeTab, setActiveTab] = useState<'company' | 'materials'>('company');
   const [tempProfile, setTempProfile] = useState<CompanyProfile>(profile);
   const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,16 +52,52 @@ export const Settings = ({ isDark, profile, onProfileChange }: SettingsProps) =>
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8 max-w-2xl mx-auto"
     >
-      <div>
-        <h2 className={cn(
-          "text-3xl font-extrabold tracking-tight",
-          isDark ? "text-white" : "text-on-surface"
-        )}>Configurações</h2>
-        <p className={cn(
-          "font-medium",
-          isDark ? "text-white/60" : "text-on-surface-variant"
-        )}>Personalize sua conta e perfil da empresa</p>
-      </div>
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h2 className={cn(
+            "text-3xl font-extrabold tracking-tight",
+            isDark ? "text-white" : "text-on-surface"
+          )}>Ajustes</h2>
+          <p className={cn(
+            "font-medium",
+            isDark ? "text-white/60" : "text-on-surface-variant"
+          )}>Gerencie o perfil da sua empresa e catálogo de materiais</p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className={cn(
+          "flex p-1 rounded-2xl border",
+          isDark ? "bg-white/5 border-white/10" : "bg-zinc-100 border-zinc-200"
+        )}>
+          <button
+            onClick={() => setActiveTab('company')}
+            className={cn(
+              "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'company'
+                ? isDark ? "bg-white text-zinc-900 shadow-xl" : "bg-white text-primary shadow-sm border border-zinc-200"
+                : isDark ? "text-white/40 hover:text-white/60" : "text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <Building2 size={14} />
+            Empresa
+          </button>
+          <button
+            onClick={() => setActiveTab('materials')}
+            className={cn(
+              "px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2",
+              activeTab === 'materials'
+                ? isDark ? "bg-white text-zinc-900 shadow-xl" : "bg-white text-primary shadow-sm border border-zinc-200"
+                : isDark ? "text-white/40 hover:text-white/60" : "text-zinc-400 hover:text-zinc-600"
+            )}
+          >
+            <Package size={14} />
+            Materiais
+          </button>
+        </div>
+      </header>
+
+      {activeTab === 'company' ? (
+        <div className="space-y-8 max-w-2xl">
 
       <section className={cn(
         "p-8 rounded-3xl border ambient-shadow space-y-8",
@@ -218,29 +264,37 @@ export const Settings = ({ isDark, profile, onProfileChange }: SettingsProps) =>
         </div>
       </section>
 
-      <div className="pt-4">
-        <button 
-          onClick={handleSave}
-          className={cn(
-            "w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ambient-shadow",
-            isSaved 
-              ? "bg-emerald-500 text-white" 
-              : "bg-primary text-white hover:scale-[1.02] active:scale-[0.98]"
-          )}
-        >
-          {isSaved ? (
-            <>
-              <CheckCircle2 size={18} />
-              Salvo com Sucesso
-            </>
-          ) : (
-            <>
-              <Save size={18} />
-              Salvar Alterações
-            </>
-          )}
-        </button>
+        <div className="pt-4">
+          <button 
+            onClick={handleSave}
+            className={cn(
+              "w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ambient-shadow",
+              isSaved 
+                ? "bg-emerald-500 text-white" 
+                : "bg-primary text-white hover:scale-[1.02] active:scale-[0.98]"
+            )}
+          >
+            {isSaved ? (
+              <>
+                <CheckCircle2 size={18} />
+                Salvo com Sucesso
+              </>
+            ) : (
+              <>
+                <Save size={18} />
+                Salvar Alterações
+              </>
+            )}
+          </button>
+        </div>
       </div>
+    ) : (
+      <Materials 
+        isDark={isDark} 
+        catalogMaterials={catalogMaterials}
+        onCatalogChange={onCatalogChange}
+      />
+    )}
     </motion.div>
   );
 };

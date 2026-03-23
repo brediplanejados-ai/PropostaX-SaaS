@@ -55,3 +55,19 @@
 .ambient-shadow {
   box-shadow: 0 12px 32px -4px rgba(25, 28, 29, 0.06);
 }
+
+.glass-premium {
+  @apply backdrop-blur-2xl border border-white/20 bg-white/40 dark:bg-black/40 dark:border-white/10;
+}
+
+.gradient-primary {
+  @apply bg-gradient-to-br from-primary to-[#7C3AED];
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[#7C3AED];
+}
+
+.hover-glow:hover {
+  @apply shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all duration-300;
+}

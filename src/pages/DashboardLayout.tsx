@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Material, FixedCost, CatalogMaterial, Budget, CompanyProfile } from '../types';
 import { MOCK_MATERIALS, MOCK_BUDGET } from '../data';
 
-type Tab = 'dashboard' | 'budgets' | 'materials' | 'settings' | 'fixed-costs';
+type Tab = 'dashboard' | 'budgets' | 'settings' | 'fixed-costs';
 
 export function DashboardLayout() {
   const { user } = useAuth();
@@ -198,20 +198,14 @@ export function DashboardLayout() {
             isDark={isDark}
           />
         );
-      case 'materials':
-        return (
-          <Materials 
-            isDark={isDark} 
-            catalogMaterials={catalogMaterials}
-            onCatalogChange={handleCatalogChange}
-          />
-        );
       case 'settings':
         return (
           <Settings 
             isDark={isDark}
             profile={companyProfile}
             onProfileChange={handleProfileChange}
+            catalogMaterials={catalogMaterials}
+            onCatalogChange={handleCatalogChange}
           />
         );
       default:

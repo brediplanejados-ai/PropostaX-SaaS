@@ -52,7 +52,6 @@ export const BottomNav = ({ activeTab, onTabChange, isDark }: BottomNavProps) =>
   const MENU_ITEMS: Array<{ id: string; label: string; icon: any; path?: string }> = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'budgets', label: 'Orçamentos', icon: FileText },
-    { id: 'materials', label: 'Materiais', icon: Package },
     { id: 'settings', label: 'Ajustes', icon: Settings }
   ];
 

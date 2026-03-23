@@ -221,29 +221,7 @@ export const Materials = ({
       animate={{ opacity: 1, y: 0 }}
       className="space-y-8"
     >
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <h1 className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? 'text-white' : 'text-zinc-900'}`}>Catálogo de Materiais</h1>
-          <p className={`${isDark ? 'text-zinc-400' : 'text-zinc-500'} font-medium`}>Consulte preços e especificações dos insumos.</p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
-            <input 
-              type="text"
-              placeholder="Buscar material..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`pl-10 pr-4 py-2 rounded-xl text-sm w-full sm:w-64 outline-none transition-all ${
-                isDark 
-                  ? 'bg-zinc-900 border-zinc-800 text-white focus:ring-1 ring-emerald-500' 
-                  : 'bg-white border-zinc-200 text-zinc-900 focus:ring-1 ring-emerald-500 border'
-              }`}
-            />
-          </div>
-        </div>
-      </header>
+      {/* Removido cabeçalho redundante para uso dentro de Ajustes */}
 
       {/* Toolbar: Filters and View Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
